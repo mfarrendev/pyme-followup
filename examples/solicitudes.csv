@@ -1,0 +1,6 @@
+id,nombre,email,descripcion,origen,utm_source,utm_medium,utm_campaign
+DEMO-001,Cliente Ficticio Uno,cliente1@example.com,Reforma de cocina,Campaña de búsqueda,google,cpc,reformas_cocinas_demo
+DEMO-002,Cliente Ficticio Dos,cliente2@example.com,Pintura de vivienda,Redes sociales,instagram,social,pintura_demo
+DEMO-003,Cliente Ficticio Tres,cliente3@example.com,Reforma de baño,Desconocido,,,
+DEMO-004,Cliente Ficticio Cuatro,cliente4@example.com,Cambio de suelo,Email,newsletter,email,servicios_demo
+DEMO-005,Cliente Ficticio Cinco,cliente5@example.com,Reforma de local,Campaña de búsqueda,google,cpc,reformas_locales_demo
