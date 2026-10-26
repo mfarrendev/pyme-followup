@@ -2,7 +2,7 @@
 
 ## Objetivo
 
-Determinar si el MVP reduce el trabajo manual y mejora la cobertura del seguimiento en el caso de estudio. La evaluación de la herramienta y el análisis del uso de Codex se documentarán por separado.
+Determinar si el MVP reduce el trabajo manual y mejora la cobertura del seguimiento en el caso de estudio. La evaluación de la herramienta y el análisis del desarrollo asistido por IA se documentarán por separado.
 
 ## Diseño de la comparación
 
@@ -40,10 +40,34 @@ Un aviso interno no equivale a seguimiento realizado: este requiere que el equip
 
 Se conservará un registro de tareas con condición, participante ficticio o identificador seudónimo, solicitud, inicio, fin, duración e incidencias. La puntualidad y los duplicados se informarán adicionalmente en las pruebas técnicas del MVP.
 
-## Evaluación de Codex
+## Evaluación del desarrollo asistido
 
-Registrar las tareas asistidas, tiempo de interacción y revisión, fallos encontrados y cambios aceptados. Este registro describe cómo se utilizó Codex, pero no demuestra por sí mismo un ahorro frente a desarrollar sin asistencia. Una comparación causal requeriría tareas equivalentes y condiciones de desarrollo controladas.
+Registrar en `docs/DESARROLLO_CON_IA.md` las tareas asistidas, tiempo de interacción y revisión, fallos encontrados y cambios aceptados. Este registro describe cómo se utilizó el asistente, pero no demuestra por sí mismo un ahorro frente a desarrollar sin asistencia. Una comparación causal requeriría tareas equivalentes y condiciones de desarrollo controladas.
 
 ## Limitaciones
 
 La muestra es pequeña y ficticia; el comportamiento real del personal, el volumen de spam y la disponibilidad del correo pueden variar. Las pruebas con tiempo simulado verifican reglas, pero no sustituyen un piloto operativo. El efecto sobre conversiones y ventas queda fuera de esta evaluación inicial.
+
+## Pruebas del MVP
+
+Las 20 pruebas automáticas (`make test`) verifican las reglas, no el
+impacto. Una prueba que nunca se vio fallar no prueba nada, así que cada
+una se midió: se puso a mano el defecto que vigila, se corrió la suite
+completa (con un arnés que exige que corran las 20) y se revirtió el
+cambio.
+
+| Defecto puesto a mano | Pruebas que fallaron |
+| --- | --- |
+| Email sin validar | 1 de 20 (escenario 2) |
+| Sin revisar la clave de envío | 1 de 20 (escenario 3) |
+| La nota interna cuenta como contacto | 1 de 20 (escenario 5) |
+| El contacto no reemplaza el vencimiento | 3 de 20 (escenarios 6 y 11, y la actuación desde el panel) |
+| Cerrar no cancela los recordatorios | 1 de 20 (escenario 7) |
+| La clave del recordatorio no incluye el vencimiento | 1 de 20 (escenario 8) |
+| Reintentos sin límite | 1 de 20 (escenario 9) |
+| El error permanente se reintenta | 1 de 20 |
+| Exportar sin sesión | 1 de 20 (escenario 10) |
+| Sin revisar la vigencia antes de enviar | 1 de 20 (escenario 11) |
+| Sin exigir el token CSRF | 1 de 20 |
+| CSV sin neutralizar fórmulas | 1 de 20 |
+| Plantillas sin escape de HTML | 1 de 20 |

@@ -1,58 +1,38 @@
 # Pyme FollowUp
 
-**Automatización del seguimiento de clientes potenciales en pequeñas y medianas empresas con ayuda de Codex.**
+**Seguimiento de solicitudes de presupuesto para pymes:** cada contacto queda
+registrado, recibe una confirmación por correo y tiene un responsable y un
+plazo. Si el plazo vence sin que nadie lo atienda, el sistema avisa.
 
-Propuesta de proyecto para reducir el trabajo administrativo asociado a las solicitudes de presupuesto y mejorar la continuidad del seguimiento comercial de los contactos obtenidos mediante acciones de marketing.
+> **Estado:** MVP funcional. Tiene formulario público, panel privado,
+> confirmaciones, recordatorios y exportación CSV, y los once escenarios de
+> aceptación de la especificación pasan como pruebas automáticas. Falta la
+> evaluación comparativa con el proceso manual
+> ([plan](docs/EVALUACION.md)): sus metas siguen siendo hipótesis.
 
-> Estado: definición y diseño del proyecto. Este repositorio contiene la documentación para desarrollar y evaluar un MVP; todavía no incluye una aplicación ejecutable.
+## El problema
 
-## Resumen ejecutivo
+Las pymes de servicios reciben consultas por formularios, campañas y redes.
+Cuando esas consultas viven en correos, notas y planillas sueltas, nadie
+sabe con certeza quién tiene que responder ni qué oportunidades quedaron sin
+seguimiento. El resultado son contactos que se enfrían, respuestas
+duplicadas y un equipo que depende de su memoria.
 
-Las pymes de servicios suelen recibir consultas a través de formularios, campañas y otros canales digitales. Cuando estas consultas se gestionan con correos, notas o archivos dispersos, resulta difícil saber quién debe responder y qué oportunidades siguen pendientes.
+**Pregunta del proyecto:** ¿en qué medida una herramienta así reduce el
+tiempo de gestión y aumenta el porcentaje de solicitudes que reciben
+seguimiento a tiempo? La mejora de ventas se considera un efecto posible
+posterior y no se le atribuye a la herramienta sin medirla.
 
-Pyme FollowUp propone centralizar las solicitudes recibidas mediante un formulario y automatizar tres tareas: registrar el contacto, confirmar la recepción por correo electrónico y recordar al responsable los seguimientos pendientes. Un panel permitirá consultar y actualizar el estado de cada oportunidad.
+El caso de estudio es una empresa ficticia de remodelaciones. El mismo flujo
+sirve para agencias, academias, talleres y cualquier negocio que trabaja
+con presupuestos.
 
-Como caso de estudio se utilizará una empresa ficticia de reformas. El mismo flujo puede adaptarse a agencias, academias, talleres y otros negocios que trabajan mediante presupuestos.
-
-## Problema y pregunta de investigación
-
-El problema que se aborda es la falta de un proceso uniforme para gestionar las oportunidades generadas por marketing. Registrar información a mano y depender de la memoria del equipo puede provocar retrasos, duplicados y contactos sin seguimiento.
-
-**Pregunta principal:** ¿en qué medida una herramienta desarrollada con ayuda de Codex puede reducir el tiempo de gestión y aumentar el porcentaje de solicitudes de presupuesto que reciben seguimiento en una pyme?
-
-La mejora de las ventas se considera un posible efecto posterior. El MVP se evaluará sobre el funcionamiento y la eficiencia del proceso, sin atribuirle incrementos de ventas no demostrados.
-
-## Objetivos
-
-### Objetivo general
-
-Diseñar y evaluar una automatización que permita a una pyme registrar, organizar y dar seguimiento a sus solicitudes de presupuesto con menos intervención manual.
-
-### Objetivos específicos
-
-- Centralizar las solicitudes y asignar un responsable a cada una.
-- Confirmar automáticamente la recepción de las solicitudes válidas.
-- Generar recordatorios internos cuando venza el plazo de seguimiento.
-- Facilitar la consulta del estado y del historial de cada oportunidad.
-- Comparar el tiempo de gestión y la cobertura del seguimiento frente a un proceso manual.
-- Documentar las aportaciones de Codex y las correcciones realizadas durante el desarrollo.
-
-## Usuarios y caso de uso
-
-| Usuario | Necesidad |
-| --- | --- |
-| Persona interesada | Solicitar un presupuesto y recibir una confirmación. |
-| Responsable comercial | Saber qué solicitudes atender y registrar el resultado. |
-| Responsable de marketing o gerencia | Consultar el origen de las solicitudes y el cumplimiento del seguimiento. |
-
-Ejemplo: una persona llega desde una campaña a la web de una empresa de reformas y solicita presupuesto. El sistema registra la consulta, conserva su origen de campaña, envía una confirmación y establece un plazo de seguimiento. Si el equipo no registra una actuación antes del vencimiento, recibe un recordatorio interno.
-
-## Flujo de automatización
+## Cómo funciona
 
 ```mermaid
 flowchart TD
     A[Formulario de solicitud] --> B{Datos válidos}
-    B -->|No| C[Mostrar errores y solicitar corrección]
+    B -->|No| C[Mostrar errores y pedir corrección]
     B -->|Sí| D[Registrar solicitud y asignar responsable]
     D --> E[Programar confirmación y vencimiento]
     E --> F[Enviar confirmación al cliente]
@@ -66,96 +46,125 @@ flowchart TD
     K -->|No| G
 ```
 
-El recordatorio inicial vencerá 48 horas naturales después de la recepción. Es una regla provisional para el caso de estudio, configurable según el negocio. La confirmación automática no cuenta como atención comercial ni como seguimiento realizado.
+- **Primer plazo de 48 horas corridas**, configurable. La confirmación
+  automática no cuenta como seguimiento.
+- **Una nota interna no cuenta como contacto.** Una llamada, un correo, una
+  reunión o un presupuesto sí, y exigen fijar la próxima fecha o cerrar la
+  oportunidad.
+- **Estados:** `nueva` → `contactada` → `presupuesto_enviado` → `ganada`
+  o `perdida`, con transiciones controladas.
+- **Un proceso periódico (cron, cada 5 minutos)** crea los recordatorios
+  vencidos y envía los correos pendientes, con hasta tres intentos (a 1 y a
+  5 minutos). Antes de mandar un recordatorio vuelve a revisar la solicitud:
+  si alguien la atendió o la cerró mientras esperaba, el aviso se cancela.
 
-## Alcance del MVP
+Las reglas completas están en la [especificación](docs/ESPECIFICACION.md).
 
-**Incluye:**
+## Arquitectura
 
-- Formulario web con validación de datos.
-- Registro centralizado de solicitudes y origen de campaña, cuando esté disponible.
-- Asignación a un responsable predeterminado y reasignación manual.
-- Confirmación por correo electrónico.
-- Panel privado con búsqueda, filtros y actualización de estados.
-- Registro manual de actuaciones y próxima fecha de seguimiento.
-- Recordatorios internos, historial y registro de errores de envío.
-- Indicadores básicos y exportación CSV para evaluación.
-
-**Fuera del MVP:**
-
-- Envío de campañas comerciales masivas o seguimientos automáticos al cliente.
-- Integración con WhatsApp, CRM externos o plataformas de anuncios.
-- Generación automática de presupuestos o valoración económica de trabajos.
-- Predicción de ventas, clasificación mediante aprendizaje automático y gestión multempresa.
-
-## Papel de Codex y de la IA
-
-Codex se utilizará como asistente de desarrollo para convertir los requisitos en código, proponer el modelo de datos, implementar conexiones, generar pruebas y ayudar a corregir errores. Las decisiones, revisiones y validaciones corresponderán a la persona responsable del proyecto.
-
-La automatización funcionará con reglas y tareas programadas; no necesita consultar un modelo de IA durante su uso. El componente de IA del proyecto es el desarrollo asistido por Codex. Incorporar un modelo para redactar mensajes sería una ampliación posterior con una evaluación propia.
-
-Se mantendrá una [bitácora de uso de Codex](docs/USO_DE_CODEX.md) para registrar las tareas, las propuestas aceptadas y las correcciones necesarias. No se afirmará que Codex redujo el tiempo de desarrollo sin disponer de una comparación válida.
-
-## Arquitectura propuesta
-
-| Componente | Propuesta | Función |
+| Componente | Implementación | Archivo |
 | --- | --- | --- |
-| Backend | Python y FastAPI | Validación, API y reglas del proceso. |
-| Interfaz | HTML, Jinja2 y Bootstrap | Formulario público y panel privado. |
-| Base de datos | SQLite para la demostración | Solicitudes, actuaciones y trabajos pendientes. |
-| Proceso periódico | Comando ejecutado por cron cada 5 minutos | Envíos y comprobación de vencimientos. |
-| Correo | Capturador local en pruebas; proveedor SMTP en piloto | Confirmaciones y recordatorios internos. |
-| Pruebas | Pytest | Verificación de reglas y escenarios de fallo. |
+| Reglas del proceso | Python, sin dependencias web | `app/servicio.py` |
+| Web | FastAPI, Jinja2, Bootstrap | `app/web.py`, `app/templates/` |
+| Base de datos | SQLite, transacciones `BEGIN IMMEDIATE` | `app/db.py` |
+| Proceso periódico | Comando para cron | `app/trabajador.py` |
+| Correo | SMTP, o captura en la base para demo y pruebas | `app/correo.py` |
+| Reloj | Inyectable: las pruebas avanzan el tiempo | `app/reloj.py` |
 
-La arquitectura se ha elegido para limitar el coste y la complejidad del prototipo. Un despliegue con mayor concurrencia requeriría revisar la base de datos y el procesamiento de tareas.
+Se eligió así para mantener el costo y la complejidad del prototipo bajos.
+Un despliegue con más concurrencia necesitaría otra base de datos y una
+cola de trabajos.
 
-Consulta la [especificación funcional y técnica](docs/ESPECIFICACION.md) para conocer entidades, estados y reglas.
+## Probarlo
 
-## Metodología y planificación
+Requiere [uv](https://docs.astral.sh/uv/).
 
-Estimación orientativa para una persona, ajustable según experiencia y disponibilidad:
+```bash
+make setup   # dependencias
+make demo    # datos ficticios; imprime la clave del panel
+make run     # http://localhost:8000/solicitar (público) y /panel (privado)
+make test    # 20 pruebas
+```
 
-| Semana | Trabajo | Entregable |
-| --- | --- | --- |
-| 1 | Analizar el proceso manual, definir requisitos y preparar datos ficticios. | Flujo base, datos y criterios de aceptación. |
-| 2 | Implementar formulario, persistencia y panel privado. | Registro y gestión de solicitudes. |
-| 3 | Implementar confirmaciones, recordatorios y tratamiento de errores. | Flujo automático verificable. |
-| 4 | Ejecutar pruebas y evaluación comparativa; documentar resultados. | Demostración e informe de evaluación. |
+Para crear un usuario propio:
 
-## Evaluación
+```bash
+PYTHONPATH=. uv run python -m scripts.crear_usuario "Nombre" email@empresa.cl
+```
 
-Se comparará un proceso manual con el automatizado mediante tareas equivalentes y datos ficticios. Se medirán el tiempo activo de gestión, la cobertura del seguimiento, los errores de registro y la puntualidad de los recordatorios.
+En producción hay que copiar `.env.example` a `.env`, definir
+`PYME_CLAVE_SECRETA` y `PYME_PRODUCCION=true` (la app se niega a arrancar
+sin clave propia), configurar SMTP y dejar `make trabajador` en cron cada 5
+minutos.
 
-Como metas de evaluación se proponen una reducción del 30 % del tiempo activo de gestión y una cobertura del seguimiento de al menos el 95 %. **Son objetivos por validar, no resultados obtenidos.**
+## Pruebas
 
-El diseño de la comparación, las fórmulas y las limitaciones están en el [plan de evaluación](docs/EVALUACION.md).
+Cada escenario de aceptación de la especificación tiene su prueba en
+`tests/test_aceptacion.py`, numerada igual:
 
-## Datos y uso responsable
+| # | Escenario |
+| --- | --- |
+| 1 | Una solicitud válida aparece una sola vez y genera un trabajo de confirmación. |
+| 2 | Una solicitud sin email válido muestra errores y no genera trabajos. |
+| 3 | Repetir el mismo envío con la misma clave no crea duplicados. |
+| 4 | Una solicitud sin contacto efectivo genera un recordatorio al vencer. |
+| 5 | Registrar una nota interna no evita ese recordatorio. |
+| 6 | Registrar un contacto y una próxima acción reemplaza el vencimiento anterior. |
+| 7 | Cerrar una oportunidad cancela sus recordatorios pendientes. |
+| 8 | Ejecutar el proceso dos veces no duplica el trabajo del mismo vencimiento. |
+| 9 | Un fallo de correo respeta el límite de intentos y queda visible. |
+| 10 | Una persona sin sesión no puede consultar ni exportar contactos. |
+| 11 | Un cambio de estado con un recordatorio pendiente impide un aviso obsoleto. |
 
-La demostración utilizará exclusivamente contactos ficticios y un servicio de captura de correo, sin enviar mensajes a direcciones reales. Los datos de ejemplo están en [examples/solicitudes.csv](examples/solicitudes.csv).
+`tests/test_web.py` cubre lo demás de la especificación de seguridad:
+protección CSRF, escape de HTML, neutralización de fórmulas en el CSV,
+límite de envíos del formulario y conservación de los UTM de campaña.
 
-Para un piloto real deberán definirse el acceso autorizado, el aviso de privacidad, la base jurídica aplicable y el plazo de conservación. Las comunicaciones sobre una solicitud se separarán de la suscripción a publicidad; pedir un presupuesto no se interpretará como consentimiento para campañas comerciales.
+Cada prueba se midió poniendo el defecto a mano y confirmando que falla.
+La tabla está en [EVALUACION.md](docs/EVALUACION.md#pruebas-del-mvp).
 
-## Entregables y criterio de finalización
+## Seguridad y datos
 
-El proyecto se considerará completado cuando se entregue una aplicación ejecutable con instrucciones de instalación, el flujo de automatización validado, las pruebas de aceptación y un informe con los resultados medidos. Este repositorio documenta la propuesta inicial que guiará ese desarrollo.
+- El formulario es público. El panel, la ficha y la exportación exigen
+  sesión, y los formularios privados llevan protección CSRF.
+- Las claves se guardan con scrypt. Un email inexistente tarda lo mismo en
+  responder que uno existente, para no revelar qué cuentas hay.
+- Las cabeceras de seguridad incluyen CSP, `X-Frame-Options` y `nosniff`. La
+  cookie de sesión es `SameSite=Lax`, y además `Secure` en producción.
+- El formulario está limitado a 5 envíos por minuto por IP. El límite vive
+  en memoria, así que alcanza para un solo proceso.
+- Los logs registran el tipo de error de envío, nunca el cuerpo del correo.
+- La demo usa solo contactos ficticios y captura los correos en la base.
 
-## Estructura del repositorio
+Antes de un piloto real hay que definir el aviso de privacidad, la base
+legal del tratamiento y el plazo de conservación. Pedir un presupuesto no es
+consentimiento para recibir publicidad.
+
+## Fuera del MVP
+
+Campañas masivas o seguimientos automáticos al cliente; integración con
+WhatsApp, CRM o plataformas de anuncios; presupuestos automáticos;
+predicción de ventas; y uso multiempresa.
+
+## Desarrollo asistido por IA
+
+El sistema no usa IA en su funcionamiento: son reglas y tareas programadas.
+La IA se usó para desarrollarlo, y la [bitácora](docs/DESARROLLO_CON_IA.md)
+registra qué se pidió, qué se revisó y qué se corrigió.
+
+## Estructura
 
 ```text
 pyme-followup/
-├── README.md
-├── docs/
-│   ├── ESPECIFICACION.md
-│   ├── EVALUACION.md
-│   └── USO_DE_CODEX.md
-└── examples/
-    └── solicitudes.csv
+├── app/            servicio, web, trabajador, correo, base de datos
+├── tests/          escenarios de aceptación y seguridad
+├── scripts/        demo y creación de usuarios
+├── docs/           especificación, evaluación y bitácora
+└── examples/       solicitudes ficticias
 ```
 
 ## Próximos pasos
 
-1. Validar el flujo con una pyme o con el caso ficticio propuesto.
-2. Implementar el MVP según los criterios de aceptación.
-3. Probar el sistema con datos y correo de demostración.
-4. Ejecutar la comparación y documentar las conclusiones.
+1. Correr la evaluación comparativa con el proceso manual
+   ([plan](docs/EVALUACION.md)).
+2. Validar el flujo con una pyme real en un piloto acotado.

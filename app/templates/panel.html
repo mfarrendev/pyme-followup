@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block titulo %}Panel · Pyme FollowUp{% endblock %}
+{% block contenido %}
+<div class="row g-3 mb-4">
+  <div class="col-sm-4"><div class="bg-white border rounded p-3">
+    <div class="small text-secondary">Solicitudes</div><div class="fs-3">{{ indicadores.total }}</div></div></div>
+  <div class="col-sm-4"><div class="bg-white border rounded p-3">
+    <div class="small text-secondary">Con seguimiento vencido</div>
+    <div class="fs-3 {% if indicadores.vencidas %}text-danger{% endif %}">{{ indicadores.vencidas }}</div></div></div>
+  <div class="col-sm-4"><div class="bg-white border rounded p-3">
+    <div class="small text-secondary">Cobertura del primer seguimiento</div>
+    <div class="fs-3">{% if indicadores.cobertura is none %}—{% else %}{{ indicadores.cobertura }} %{% endif %}</div>
+    <div class="small text-secondary">sobre {{ indicadores.base_cobertura }} con el plazo cumplido</div></div></div>
+</div>
+
+<form class="row g-2 align-items-end mb-3" method="get" action="/panel">
+  <div class="col-md-3"><label class="form-label small" for="q">Buscar</label>
+    <input class="form-control form-control-sm" id="q" name="q" value="{{ filtros.q }}" placeholder="Nombre, email o descripción"></div>
+  <div class="col-md-2"><label class="form-label small" for="estado">Estado</label>
+    <select class="form-select form-select-sm" id="estado" name="estado"><option value="">Todos</option>
+    {% for e in estados %}<option value="{{ e }}" {% if filtros.estado == e %}selected{% endif %}>{{ e|etiqueta }}</option>{% endfor %}</select></div>
+  <div class="col-md-2"><label class="form-label small" for="responsable">Responsable</label>
+    <select class="form-select form-select-sm" id="responsable" name="responsable"><option value="">Todos</option>
+    {% for us in usuarios %}<option value="{{ us.id }}" {% if filtros.responsable == us.id|string %}selected{% endif %}>{{ us.nombre }}</option>{% endfor %}</select></div>
+  <div class="col-md-2"><label class="form-label small" for="origen">Origen</label>
+    <select class="form-select form-select-sm" id="origen" name="origen"><option value="">Todos</option>
+    {% for o in origenes %}<option value="{{ o }}" {% if filtros.origen == o %}selected{% endif %}>{{ o }}</option>{% endfor %}</select></div>
+  <div class="col-md-2 form-check ms-2 mb-1">
+    <input class="form-check-input" type="checkbox" id="vencidas" name="vencidas" value="1" {% if filtros.vencidas %}checked{% endif %}>
+    <label class="form-check-label small" for="vencidas">Solo vencidas</label></div>
+  <div class="col-auto"><button class="btn btn-sm btn-primary">Filtrar</button></div>
+</form>
+
+<div class="table-responsive bg-white border rounded">
+<table class="table table-hover mb-0 align-middle">
+  <thead><tr><th>#</th><th>Contacto</th><th>Origen</th><th>Estado</th><th>Responsable</th><th>Próximo seguimiento</th><th></th></tr></thead>
+  <tbody>
+  {% for s in solicitudes %}
+  <tr>
+    <td>{{ s.id }}</td>
+    <td><a href="/solicitudes/{{ s.id }}">{{ s.nombre }}</a><div class="small text-secondary">{{ s.descripcion[:60] }}</div></td>
+    <td class="small">{{ s.origen }}</td>
+    <td><span class="badge text-bg-secondary">{{ s.estado|etiqueta }}</span></td>
+    <td class="small">{{ s.responsable or '—' }}</td>
+    <td class="small {% if s.vence_en and s.vence_en <= ahora %}text-danger fw-semibold{% endif %}">{{ s.vence_en|local }}</td>
+    <td>{% if s.fallidos %}<span class="badge text-bg-warning">correo con error</span>{% endif %}</td>
+  </tr>
+  {% else %}
+  <tr><td colspan="7" class="text-center text-secondary py-4">No hay solicitudes con estos filtros.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+{% endblock %}

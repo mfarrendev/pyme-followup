@@ -25,7 +25,7 @@ Transiciones permitidas:
 - `presupuesto_enviado` → `ganada` o `perdida`.
 - `ganada` y `perdida` son estados finales en el MVP.
 
-Una solicitud nueva tiene un vencimiento inicial a las 48 horas naturales. Al registrar un contacto efectivo o un presupuesto enviado, el usuario deberá indicar la siguiente fecha de seguimiento o cerrar la oportunidad. Una nota interna por sí sola no cuenta como contacto efectivo ni elimina el vencimiento.
+Una solicitud nueva tiene un vencimiento inicial a las 48 horas corridas. Al registrar un contacto efectivo o un presupuesto enviado, el usuario deberá indicar la siguiente fecha de seguimiento o cerrar la oportunidad. Una nota interna por sí sola no cuenta como contacto efectivo ni elimina el vencimiento.
 
 El proceso periódico comprueba vencimientos cada 5 minutos. Tras crear el recordatorio, lo marca como generado para ese vencimiento. Una nueva fecha permite un nuevo recordatorio. Justo antes de procesarlo, vuelve a comprobar el estado y la fecha actuales para evitar avisos que hayan quedado obsoletos.
 

@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block titulo %}Ingresar · Pyme FollowUp{% endblock %}
+{% block contenido %}
+<div class="row justify-content-center"><div class="col-md-5 col-lg-4">
+  <h1 class="h4 mb-3">Panel de seguimiento</h1>
+  {% if error %}<div class="alert alert-danger">{{ error }}</div>{% endif %}
+  <form method="post" action="/login">
+    <input type="hidden" name="csrf" value="{{ csrf }}">
+    <div class="mb-3"><label class="form-label" for="email">Email</label>
+      <input class="form-control" id="email" name="email" type="email" autocomplete="username" required></div>
+    <div class="mb-3"><label class="form-label" for="clave">Clave</label>
+      <input class="form-control" id="clave" name="clave" type="password" autocomplete="current-password" required></div>
+    <button class="btn btn-primary w-100">Ingresar</button>
+  </form>
+</div></div>
+{% endblock %}

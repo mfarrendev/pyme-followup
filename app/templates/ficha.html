@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block titulo %}Solicitud {{ s.id }} · Pyme FollowUp{% endblock %}
+{% block contenido %}
+<a class="small" href="/panel">← Volver al panel</a>
+<div class="d-flex justify-content-between align-items-start mt-2 mb-3">
+  <div>
+    <h1 class="h4 mb-0">{{ s.nombre }}</h1>
+    <div class="text-secondary">{{ s.email }}{% if s.telefono %} · {{ s.telefono }}{% endif %}</div>
+  </div>
+  <span class="badge text-bg-secondary fs-6">{{ s.estado|etiqueta }}</span>
+</div>
+{% if error %}<div class="alert alert-danger">{{ error }}</div>{% endif %}
+
+<div class="row g-4">
+  <div class="col-lg-7">
+    <div class="bg-white border rounded p-3 mb-3">
+      <p class="mb-2">{{ s.descripcion }}</p>
+      <div class="small text-secondary">
+        Recibida {{ s.creada_en|local }} · Origen: {{ s.origen }}
+        {% if s.utm_campaign %} · campaña {{ s.utm_campaign }}{% endif %}<br>
+        Próximo seguimiento: <strong>{{ s.vence_en|local }}</strong>
+      </div>
+    </div>
+
+    <h2 class="h6">Historial</h2>
+    <ul class="list-group mb-3">
+      {% for a in actuaciones %}
+      <li class="list-group-item">
+        <div class="d-flex justify-content-between"><strong>{{ a.tipo|etiqueta }}</strong><span class="small text-secondary">{{ a.fecha|local }} · {{ a.nombre }}</span></div>
+        {% if a.nota %}<div class="small">{{ a.nota }}</div>{% endif %}
+      </li>
+      {% else %}
+      <li class="list-group-item text-secondary">Sin actuaciones todavía.</li>
+      {% endfor %}
+    </ul>
+
+    <h2 class="h6">Correos</h2>
+    <ul class="list-group">
+      {% for t in trabajos %}
+      <li class="list-group-item small d-flex justify-content-between">
+        <span>{{ t.tipo|etiqueta }} · intentos {{ t.intentos }}{% if t.ultimo_error %} · <span class="text-danger">{{ t.ultimo_error }}</span>{% endif %}</span>
+        <span class="badge {% if t.estado == 'fallido' %}text-bg-warning{% else %}text-bg-light{% endif %}">{{ t.estado|etiqueta }}</span>
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+
+  <div class="col-lg-5">
+    {% if transiciones %}
+    <form class="bg-white border rounded p-3 mb-3" method="post" action="/solicitudes/{{ s.id }}/actuacion">
+      <h2 class="h6">Registrar actuación</h2>
+      <input type="hidden" name="csrf" value="{{ csrf }}">
+      <div class="mb-2"><label class="form-label small" for="tipo">Tipo</label>
+        <select class="form-select form-select-sm" id="tipo" name="tipo">
+          {% for t in tipos %}<option value="{{ t }}">{{ t|etiqueta }}{% if t == 'nota' %} (interna, no cuenta como contacto){% endif %}</option>{% endfor %}
+        </select></div>
+      <div class="mb-2"><label class="form-label small" for="nota">Nota</label>
+        <textarea class="form-control form-control-sm" id="nota" name="nota" rows="2"></textarea></div>
+      <div class="mb-2"><label class="form-label small" for="proxima_accion">Próximo seguimiento</label>
+        <input class="form-control form-control-sm" id="proxima_accion" name="proxima_accion" type="datetime-local"></div>
+      <div class="mb-3"><label class="form-label small" for="nuevo_estado">Cambiar estado</label>
+        <select class="form-select form-select-sm" id="nuevo_estado" name="nuevo_estado"><option value="">Sin cambio</option>
+          {% for e in transiciones %}<option value="{{ e }}">{{ e|etiqueta }}</option>{% endfor %}
+        </select></div>
+      <button class="btn btn-primary btn-sm">Guardar</button>
+    </form>
+    <form class="bg-white border rounded p-3" method="post" action="/solicitudes/{{ s.id }}/responsable">
+      <h2 class="h6">Responsable</h2>
+      <input type="hidden" name="csrf" value="{{ csrf }}">
+      <div class="input-group input-group-sm">
+        <select class="form-select" name="responsable">
+          {% for us in usuarios %}<option value="{{ us.id }}" {% if us.nombre == s.responsable %}selected{% endif %}>{{ us.nombre }}</option>{% endfor %}
+        </select>
+        <button class="btn btn-outline-primary">Reasignar</button>
+      </div>
+    </form>
+    {% else %}
+    <div class="alert alert-secondary">Oportunidad cerrada el {{ s.cerrada_en|local }}.</div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

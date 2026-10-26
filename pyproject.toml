@@ -1,0 +1,32 @@
+[project]
+name = "pyme-followup"
+version = "0.1.0"
+description = "Seguimiento de solicitudes de presupuesto para pymes: registro, confirmación por correo, recordatorios internos y panel."
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.115.0",
+    "jinja2>=3.1.0",
+    "python-multipart>=0.0.9",
+    "itsdangerous>=2.2.0",
+    "uvicorn>=0.30.0",
+    "pydantic-settings>=2.2.0",
+    "email-validator>=2.1.0",
+]
+
+[dependency-groups]
+dev = ["pytest>=8.2.0", "httpx2>=0.1.0", "ruff>=0.6.0"]
+
+[tool.uv]
+package = false
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+
+[tool.ruff]
+line-length = 110
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "RUF"]
+ignore = ["E501", "RUF001", "RUF002", "RUF003", "B008"]

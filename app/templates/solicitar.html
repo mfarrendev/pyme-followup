@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block titulo %}Solicitar presupuesto · {{ empresa }}{% endblock %}
+{% block contenido %}
+<div class="row justify-content-center">
+  <div class="col-md-7 col-lg-6">
+    <h1 class="h3 mb-1">Solicita tu presupuesto</h1>
+    <p class="text-secondary mb-4">{{ empresa }} te responde dentro de 48 horas.</p>
+    {% if errores.general %}<div class="alert alert-warning">{{ errores.general }}</div>{% endif %}
+    {% if errores.clave_envio %}<div class="alert alert-warning">{{ errores.clave_envio }}</div>{% endif %}
+    <form method="post" action="/solicitar" novalidate>
+      <input type="hidden" name="clave_envio" value="{{ clave_envio }}">
+      {% for k in ["utm_source", "utm_medium", "utm_campaign"] %}
+      <input type="hidden" name="{{ k }}" value="{{ datos.get(k, '') }}">
+      {% endfor %}
+      {% for campo, etiqueta, tipo in [("nombre", "Nombre", "text"), ("email", "Email", "email"), ("telefono", "Teléfono (opcional)", "tel")] %}
+      <div class="mb-3">
+        <label class="form-label" for="{{ campo }}">{{ etiqueta }}</label>
+        <input class="form-control {% if errores[campo] %}is-invalid{% endif %}" id="{{ campo }}" name="{{ campo }}" type="{{ tipo }}" value="{{ datos.get(campo, '') }}">
+        {% if errores[campo] %}<div class="invalid-feedback">{{ errores[campo] }}</div>{% endif %}
+      </div>
+      {% endfor %}
+      <div class="mb-3">
+        <label class="form-label" for="descripcion">¿Qué necesitas?</label>
+        <textarea class="form-control {% if errores.descripcion %}is-invalid{% endif %}" id="descripcion" name="descripcion" rows="4">{{ datos.get('descripcion', '') }}</textarea>
+        {% if errores.descripcion %}<div class="invalid-feedback">{{ errores.descripcion }}</div>{% endif %}
+      </div>
+      <div class="mb-4">
+        <label class="form-label" for="origen">¿Cómo nos conociste? (opcional)</label>
+        <select class="form-select" id="origen" name="origen">
+          {% for o in ["", "Búsqueda en Google", "Redes sociales", "Recomendación", "Email", "Otro"] %}
+          <option value="{{ o }}" {% if datos.get('origen') == o %}selected{% endif %}>{{ o or "Elige una opción" }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <p class="small text-secondary">Usamos tus datos solo para responder esta solicitud. No te suscribimos a publicidad.</p>
+      <button class="btn btn-primary">Enviar solicitud</button>
+    </form>
+  </div>
+</div>
+{% endblock %}
